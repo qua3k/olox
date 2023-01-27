@@ -19,6 +19,6 @@ OCaml before, but I have done some work with Haskell)
     `unit -> unit`.
 *   There is no `>>=` operator in the standard library, and the `let*` syntax
     described in
-    [Language extensions](https://v2.ocaml.org/manual/bindingops.html) doesn't
-    isn't actually defined either?
+    [Language extensions](https://v2.ocaml.org/manual/bindingops.html) isn't
+    actually defined either?
 

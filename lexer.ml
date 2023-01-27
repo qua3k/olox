@@ -133,11 +133,9 @@ let rec advance_past state (fn : char -> bool) =
   | true -> state
   | false -> (
       let ch = get_current_char state in
-      (* begin "advance_past (not at end) " ^ Char.escaped ch|> print_endline; *)
       match fn ch with
       | true -> advance_past (advance state) fn
       | false -> state)
-(* "advance_past: " ^ (Int.to_string state.current) ^ " is end" |> print_endline ; *)
 
 let add_slash next =
   let next_ch = get_current_char next in
