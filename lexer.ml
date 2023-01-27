@@ -143,11 +143,11 @@ let add_slash next =
   | '/' -> advance_past next (fun c -> c != '\n')
   | _ -> add_token next SLASH
 
-let is_digit = function c when c >= '0' && c <= '9' -> true | _ -> false
+let is_digit = function '0'..'9' -> true | _ -> false
 
 let is_alpha = function
-  | c when c >= 'a' && c <= 'z' -> true
-  | c when c >= 'A' && c <= 'Z' -> true
+  | 'a'..'z' -> true
+  | 'A'..'Z' -> true
   | '_' -> true
   | _ -> false
 
@@ -234,7 +234,7 @@ let scan_token state =
   | ' ' | '\r' | '\t' -> next
   | '\n' -> { next with line = next.line + 1 }
   | '"' -> handle_string next
-  | digit when is_digit digit -> handle_digit next
+  | '0'..'9' -> handle_digit next
   | alpha when is_alpha alpha -> handle_identifier next
   | _ ->
       error state.line "Unexpected character.";
