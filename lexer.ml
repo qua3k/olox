@@ -4,98 +4,7 @@ let report line where message =
 
 let error line message = report (string_of_int line) "" message
 
-type token_type =
-  (* Single-character tokens. *)
-  | LEFT_PAREN
-  | RIGHT_PAREN
-  | LEFT_BRACE
-  | RIGHT_BRACE
-  | COMMA
-  | DOT
-  | MINUS
-  | PLUS
-  | SEMICOLON
-  | SLASH
-  | STAR
-  (* One or two character tokens. *)
-  | BANG
-  | BANG_EQUAL
-  | EQUAL
-  | EQUAL_EQUAL
-  | GREATER
-  | GREATER_EQUAL
-  | LESS
-  | LESS_EQUAL
-  (* Literals. *)
-  | IDENTIFIER
-  | STRING of string
-  | NUMBER of float
-  (* Keywords. *)
-  | AND
-  | CLASS
-  | ELSE
-  | FALSE
-  | FUN
-  | FOR
-  | IF
-  | NIL
-  | OR
-  | PRINT
-  | RETURN
-  | SUPER
-  | THIS
-  | TRUE
-  | VAR
-  | WHILE
-  (* EOF *)
-  | EOF
-
-let token_to_string = function
-  (* Single-character tokens. *)
-  | LEFT_PAREN -> "left_paren"
-  | RIGHT_PAREN -> "right_paren"
-  | LEFT_BRACE -> "left_brace"
-  | RIGHT_BRACE -> "right_brace"
-  | COMMA -> "comma"
-  | DOT -> "dot"
-  | MINUS -> "minus"
-  | PLUS -> "plus"
-  | SEMICOLON -> "semicolon"
-  | SLASH -> "slash"
-  | STAR -> "star"
-  (* One or two character tokens. *)
-  | BANG -> "bang"
-  | BANG_EQUAL -> "bang_equal"
-  | EQUAL -> "equal"
-  | EQUAL_EQUAL -> "equal_equal"
-  | GREATER -> "greater"
-  | GREATER_EQUAL -> "greater_equal"
-  | LESS -> "less"
-  | LESS_EQUAL -> "less_equal"
-  (* Literals. *)
-  | IDENTIFIER -> "identifier"
-  | STRING s -> "string " ^ s
-  | NUMBER f -> "number " ^ Float.to_string f
-  (* Keywords. *)
-  | AND -> "and"
-  | CLASS -> "class"
-  | ELSE -> "else"
-  | FALSE -> "false"
-  | FUN -> "fun"
-  | FOR -> "for"
-  | IF -> "if"
-  | NIL -> "nil"
-  | OR -> "or"
-  | PRINT -> "print"
-  | RETURN -> "return"
-  | SUPER -> "super"
-  | THIS -> "this"
-  | TRUE -> "true"
-  | VAR -> "var"
-  | WHILE -> "while"
-  | EOF -> "eof"
-
-type token = { token_type : token_type; line : int }
+type token = { t : Token.t; line : int }
 
 type state = {
   source : string;
@@ -114,14 +23,12 @@ let is_at_end state = state.current >= String.length state.source
 let get_current_char state =
   try state.source.[state.current] with _ -> '\x00'
 
-let add_token state token_type =
-  { state with tokens = { token_type; line = state.line } :: state.tokens }
+let add_token state t =
+  { state with tokens = { t; line = state.line } :: state.tokens }
 
-let add_two_char_token next (true_token, false_token) =
+let add_two_char_token next a b =
   let token =
-    match get_current_char next == '=' with
-    | true -> true_token
-    | false -> false_token
+    match get_current_char next == '=' with true -> a | false -> b
   in
   add_token (advance next) token
 
@@ -187,6 +94,7 @@ let handle_identifier state =
   let next = advance_past state is_alpha_numeric in
   match state_substring next with
   | Some s ->
+      let open Token in
       let token_type =
         match s with
         | "and" -> AND
@@ -223,10 +131,10 @@ let scan_token state =
   | '+' -> add_token next PLUS
   | ';' -> add_token next SEMICOLON
   | '*' -> add_token next STAR
-  | '!' -> add_two_char_token next (BANG_EQUAL, BANG)
-  | '=' -> add_two_char_token next (EQUAL_EQUAL, EQUAL)
-  | '<' -> add_two_char_token next (LESS_EQUAL, LESS)
-  | '>' -> add_two_char_token next (GREATER_EQUAL, GREATER)
+  | '!' -> add_two_char_token next BANG_EQUAL BANG
+  | '=' -> add_two_char_token next EQUAL_EQUAL EQUAL
+  | '<' -> add_two_char_token next LESS_EQUAL LESS
+  | '>' -> add_two_char_token next GREATER_EQUAL GREATER
   | '/' -> add_slash next
   | ' ' | '\r' | '\t' -> next
   | '\n' -> { next with line = next.line + 1 }

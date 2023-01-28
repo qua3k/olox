@@ -1,9 +1,7 @@
 open Lexer
 
 let format_token_list tokens =
-  let to_string token =
-    token_to_string token.token_type |> print_endline
-  in
+  let to_string token = Token.to_string token.t |> print_endline in
   List.iter to_string tokens
 
 let run source = scan_tokens source |> format_token_list
