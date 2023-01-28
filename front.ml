@@ -1,6 +1,12 @@
 open Lexer
 
-let run source = scan_tokens source |> Print.Token.print_out
+let run source =
+  let s =
+  match scan_tokens source |> Parser.parse |> Parser.Eval.interpret with
+  | Ok l -> Print.Ast.print_literal l
+  | Error e -> Printexc.to_string e
+  in
+    print_endline s
 
 let run_prompt () =
   while true do
