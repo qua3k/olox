@@ -50,7 +50,6 @@ type token_type =
   (* EOF *)
   | EOF
 
-(** Maps a token to a string. *)
 let token_to_string = function
   (* Single-character tokens. *)
   | LEFT_PAREN -> "left_paren"
@@ -143,12 +142,10 @@ let add_slash next =
   | '/' -> advance_past next (fun c -> c != '\n')
   | _ -> add_token next SLASH
 
-let is_digit = function '0'..'9' -> true | _ -> false
+let is_digit = function '0' .. '9' -> true | _ -> false
 
 let is_alpha = function
-  | 'a'..'z' -> true
-  | 'A'..'Z' -> true
-  | '_' -> true
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
   | _ -> false
 
 let is_alpha_numeric ch = is_alpha ch || is_digit ch
@@ -234,7 +231,7 @@ let scan_token state =
   | ' ' | '\r' | '\t' -> next
   | '\n' -> { next with line = next.line + 1 }
   | '"' -> handle_string next
-  | '0'..'9' -> handle_digit next
+  | '0' .. '9' -> handle_digit next
   | alpha when is_alpha alpha -> handle_identifier next
   | _ ->
       error state.line "Unexpected character.";
