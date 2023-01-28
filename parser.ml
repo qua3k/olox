@@ -20,9 +20,6 @@ let match_tokens xs ts =
   | hd :: tl ->
       if not_at_end hd && List.mem hd.t ts then Some (hd.t, tl) else None
   | _ -> None
-(* at end if true then recurse and *)
-
-(* and assignment t = t *)
 
 let rec match_right (hd, tl) types f =
   match match_tokens tl types with
@@ -63,8 +60,8 @@ and unary tokens =
 and primary = function
   | hd :: tl -> (
       match hd.t with
-      | FALSE -> (Ast.LITERAL FALSE, tl)
-      | TRUE -> (Ast.LITERAL TRUE, tl)
+      | FALSE -> (Ast.LITERAL (BOOL false), tl)
+      | TRUE -> (Ast.LITERAL (BOOL true), tl)
       | NIL -> (Ast.LITERAL NIL, tl)
       | NUMBER n -> (Ast.LITERAL (NUMBER n), tl)
       | STRING s -> (Ast.LITERAL (STRING s), tl)
@@ -75,7 +72,7 @@ and primary = function
               ( Ast.GROUPING
                   { left = LEFT_PAREN; expr; right = RIGHT_PAREN },
                 t )
-          | None -> failwith "todo")
+          | None -> failwith "Expect ')' after expression.")
       | _ -> failwith "Expect expression.")
   | _ -> failwith "Input expected."
 
