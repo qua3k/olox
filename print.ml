@@ -1,8 +1,8 @@
 module Ast = struct
-  let rec print =
-    let open Ast in
-    let open Token in
-    function
+  open Ast
+  open Token
+
+  let rec print = function
     | BINARY b ->
         let left, right = (print b.left, print b.right) in
         Printf.sprintf "(%s %s %s)" (to_string b.operator) left right
@@ -11,8 +11,8 @@ module Ast = struct
         Printf.sprintf "%sgroup %s%s" (to_string g.left) expr
           (to_string g.right)
     | LITERAL NIL -> "nil"
-    | LITERAL TRUE -> "true"
-    | LITERAL FALSE -> "false"
+    | LITERAL (BOOL true) -> "true"
+    | LITERAL (BOOL false) -> "false"
     | LITERAL (NUMBER f) -> Float.to_string f
     | LITERAL (STRING s) -> s
     | UNARY u ->
@@ -22,8 +22,9 @@ module Ast = struct
 end
 
 module Token = struct
+  open Lexer
+
   let print xs =
-    let open Lexer in
     let f token = token.t |> Token.to_string in
     List.map f xs
 

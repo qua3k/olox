@@ -1,4 +1,4 @@
-type literal = NIL | TRUE | FALSE | NUMBER of float | STRING of string
+type literal = NIL | BOOL of bool | NUMBER of float | STRING of string
 
 type expression =
   | ASSIGNMENT of { ident : literal; equal : Token.t; expr : expression }
