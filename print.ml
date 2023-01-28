@@ -25,6 +25,7 @@ module Token = struct
   let print xs =
     let open Lexer in
     let f token = token.t |> Token.to_string in
-      List.map f xs
+    List.map f xs
+
   let print_out xs = print xs |> List.iter print_endline
 end
