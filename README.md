@@ -4,6 +4,12 @@ OCaml implementation of the lox language from
 [Crafting Interpreters](https://craftinginterpreters.com) (I have never used
 OCaml before, but I have done some work with Haskell)
 
+Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
+
+## TODOs
+
+*   Think about replacing the stdlib with Jane Street's Core.
+
 ## Lessons Learned
 
 *   Files implicitly define a module of their filename.
