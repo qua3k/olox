@@ -1,2 +1,4 @@
+open Olox.Front
+
 (** Entry point for Olox. *)
-let () = Olox.main Sys.argv
+let () = main Sys.argv
