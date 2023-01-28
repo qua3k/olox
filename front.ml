@@ -1,10 +1,6 @@
 open Lexer
 
-let format_token_list tokens =
-  let to_string token = Token.to_string token.t |> print_endline in
-  List.iter to_string tokens
-
-let run source = scan_tokens source |> format_token_list
+let run source = scan_tokens source |> Print.Token.print_out
 
 let run_prompt () =
   while true do
