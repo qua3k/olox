@@ -19,6 +19,17 @@ module Ast = struct
         let expr = print u.expr in
         Printf.sprintf "(%s %s)" (to_string u.operator) expr
     | _ -> failwith "not implemented"
+
+  let print_literal = function
+    | BOOL b -> Bool.to_string b
+    | NUMBER f -> (
+        let s = Float.to_string f in
+        let l = String.length s in
+        match s.[l - 1] = '.' with
+        | true -> String.sub s 0 (l - 1)
+        | false -> s)
+    | STRING a -> a
+    | NIL -> "nil"
 end
 
 module Token = struct
