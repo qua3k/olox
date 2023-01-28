@@ -88,4 +88,55 @@ let rec synchronize = function
       | _, _ -> synchronize xs)
   | _ as e -> e
 
-let parse tokens = expression tokens
+let parse tokens = expression tokens |> fst
+
+(** This module will be exception hell, because there is no way I'm
+    writing pattern matches on Result. *)
+module Eval = struct
+  open Ast
+  open Token
+
+  let is_true = function BOOL false | NIL -> false | _ -> true
+
+  let is_equal (a : literal) (b : literal) =
+    match (a, b) with
+    (* Deviate slightly to avoid converting "three" into 3. *)
+    | STRING s, NUMBER n | NUMBER n, STRING s -> Float.to_string n = s
+    | STRING a, STRING b -> a = b
+    | NUMBER a, NUMBER b -> a = b (* Comparing floats??? *)
+    | NIL, NIL -> true
+    | _, NIL | NIL, _ -> false
+    | _ -> false
+
+  let rec evaluate = function
+    | GROUPING { expr; _ } -> evaluate expr
+    | BINARY { left; operator; right } -> binary left operator right
+    | LITERAL l -> l
+    | UNARY { operator; expr } -> unary operator expr
+    | _ -> failwith "TODO"
+
+  and unary op expr =
+    let right = evaluate expr in
+    match (op, right) with
+    | MINUS, NUMBER n -> NUMBER (Float.neg n)
+    | BANG, _ -> BOOL (is_true right |> not)
+    | _ -> Invalid_argument "Must be a number." |> raise
+
+  and binary left op right =
+    let a = evaluate left and b = evaluate right in
+    match (op, a, b) with
+    | MINUS, NUMBER l, NUMBER r -> NUMBER (l -. r)
+    | SLASH, NUMBER l, NUMBER r -> NUMBER (l /. r)
+    | STAR, NUMBER l, NUMBER r -> NUMBER (l *. r)
+    | PLUS, NUMBER l, NUMBER r -> NUMBER (l +. r)
+    | PLUS, STRING l, STRING r -> STRING (l ^ r)
+    | GREATER, NUMBER l, NUMBER r -> BOOL (l > r)
+    | GREATER_EQUAL, NUMBER l, NUMBER r -> BOOL (l >= r)
+    | LESS, NUMBER l, NUMBER r -> BOOL (l < r)
+    | LESS_EQUAL, NUMBER l, NUMBER r -> BOOL (l <= r)
+    | BANG_EQUAL, _, _ -> BOOL (is_equal a b |> not)
+    | EQUAL, _, _ -> BOOL (is_equal a b)
+    | _ -> Invalid_argument "Arguments must be of the same type." |> raise
+
+  let interpret expr = Result.(try Ok (evaluate expr) with e -> Error e)
+end
