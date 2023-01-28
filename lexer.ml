@@ -28,7 +28,7 @@ let add_token state t =
 
 let add_two_char_token next a b =
   let token =
-    match get_current_char next == '=' with true -> a | false -> b
+    match get_current_char next = '=' with true -> a | false -> b
   in
   add_token (advance next) token
 
@@ -47,6 +47,8 @@ let add_slash next =
   let next_ch = get_current_char next in
   match next_ch with
   | '/' -> advance_past next (fun c -> c != '\n')
+  (* | '*' -> If we allow nested comments we need to keep count of how deep
+     we're nesting. *)
   | _ -> add_token next SLASH
 
 let is_digit = function '0' .. '9' -> true | _ -> false
