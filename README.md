@@ -9,6 +9,12 @@ Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
 ## TODOs
 
 *   Think about replacing the stdlib with Jane Street's Core.
+    *   *Why this needs to be thought out:* I aim for this to have as few
+        dependencies as possible, relying on easily understood OCaml code for
+        beginners like me who are new to the language (avoiding ppx, etc)
+    *   This also means that the code is easily to understand and avoids
+        duplication, which I feel it does. The lexer is roughly 150 lines of
+        code, and the parser and interpreter are roughly the same.
 
 ## Lessons Learned
 
