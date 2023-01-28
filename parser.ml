@@ -7,12 +7,6 @@ let consume t = function
   | [] -> None
   | hd :: tl -> if hd.t = t then Some tl else None
 
-let match_token xs t =
-  match xs with
-  | hd :: tl ->
-      if not_at_end hd && hd.t = t then Some (hd.t, tl) else None
-  | _ -> None
-
 (* Should we return an empty list or None? The former should be more
    expensive. *)
 let match_tokens xs ts =
