@@ -1,7 +1,4 @@
-(* Expression code.*)
-
 (* Generate some ASTs. *)
-
 open Lexer
 
 let not_at_end token = token.t != EOF
@@ -33,8 +30,8 @@ let rec match_right (hd, tl) types f =
       let right, xs = f tl in
       (hd, right, xs)
 
-let rec match_tree tokens types f =
-  let ((left, tl) as tuple) = f tokens in
+let rec match_tree ts types f =
+  let ((left, tl) as tuple) = f ts in
   match match_tokens tl types with
   | Some t ->
       let operator, right, xs = match_right t types f in
@@ -59,7 +56,9 @@ and unary tokens =
       (Ast.UNARY { operator; expr }, xs)
   | _ -> primary tokens
 
-(* Should we rewrite all the prototypes to return a Result? It wouldn't be that much work since we've essentially consolodated into one function. *)
+(* Should we rewrite all the prototypes to return a Result? It wouldn't
+   be that much work since we've essentially consolodated into one
+   function. *)
 and primary = function
   | hd :: tl -> (
       match hd.t with
@@ -79,4 +78,22 @@ and primary = function
       | _ -> failwith "Expect expression.")
   | _ -> failwith "Input expected."
 
-let synchronize tokens = tokens
+let rec synchronize = function
+  | a :: b :: tl -> (
+      let xs = b :: tl in
+      match (a.t, b.t) with
+      | EOF, _
+      | SEMICOLON, _
+      | _, CLASS
+      | _, FUN
+      | _, VAR
+      | _, FOR
+      | _, IF
+      | _, WHILE
+      | _, PRINT
+      | _, RETURN ->
+          xs
+      | _, _ -> synchronize xs)
+  | _ as e -> e
+
+let parse tokens = expression tokens
