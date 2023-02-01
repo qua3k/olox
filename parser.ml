@@ -66,9 +66,7 @@ module Expression = struct
             | Some t -> (Ast.Grouping expr, t)
             | None -> failwith "Expect ')' after expression."
             (* consume, stop iterating and fail *))
-        | _ ->
-            Token.to_string hd.t |> print_endline;
-            failwith "Expect expression.")
+        | _ -> failwith "Expect expression.")
     | [] -> failwith "Input expected."
 
   and unary tokens =
