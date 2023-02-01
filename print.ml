@@ -10,8 +10,7 @@ module Ast = struct
         let expr = expression g in
         Printf.sprintf "(group %s)" expr
     | Literal Nil -> "nil"
-    | Literal (Bool true) -> "true"
-    | Literal (Bool false) -> "false"
+    | Literal (Bool b) -> Bool.to_string b
     | Literal (Number f) -> Float.to_string f
     | Literal (String s) -> s
     | Unary u ->
