@@ -1,90 +1,90 @@
 type t =
   (* Single-character tokens. *)
-  | LEFT_PAREN
-  | RIGHT_PAREN
-  | LEFT_BRACE
-  | RIGHT_BRACE
-  | COMMA
-  | DOT
-  | MINUS
-  | PLUS
-  | SEMICOLON
-  | SLASH
-  | STAR
+  | Left_paren
+  | Right_paren
+  | Left_brace
+  | Right_brace
+  | Comma
+  | Dot
+  | Minus
+  | Plus
+  | Semicolon
+  | Slash
+  | Star
   (* One or two character tokens. *)
-  | BANG
-  | BANG_EQUAL
-  | EQUAL
-  | EQUAL_EQUAL
-  | GREATER
-  | GREATER_EQUAL
-  | LESS
-  | LESS_EQUAL
+  | Bang
+  | Bang_equal
+  | Equal
+  | Equal_equal
+  | Greater
+  | Greater_equal
+  | Less
+  | Less_equal
   (* Literals. *)
-  | IDENTIFIER
-  | STRING of string
-  | NUMBER of float
+  | Identifier
+  | String of string
+  | Number of float
   (* Keywords. *)
-  | AND
-  | CLASS
-  | ELSE
-  | FALSE
-  | FUN
-  | FOR
-  | IF
-  | NIL
-  | OR
-  | PRINT
-  | RETURN
-  | SUPER
-  | THIS
-  | TRUE
-  | VAR
-  | WHILE
+  | And
+  | Class
+  | Else
+  | False
+  | Fun
+  | For
+  | If
+  | Nil
+  | Or
+  | Print
+  | Return
+  | Super
+  | This
+  | True
+  | Var
+  | While
   (* EOF *)
-  | EOF
+  | Eof
 
 let to_string = function
   (* Single-character tokens. *)
-  | LEFT_PAREN -> "("
-  | RIGHT_PAREN -> ")"
-  | LEFT_BRACE -> "{"
-  | RIGHT_BRACE -> "}"
-  | COMMA -> ","
-  | DOT -> "."
-  | MINUS -> "-"
-  | PLUS -> "+"
-  | SEMICOLON -> ";"
-  | SLASH -> "/"
-  | STAR -> "*"
+  | Left_paren -> "("
+  | Right_paren -> ")"
+  | Left_brace -> "{"
+  | Right_brace -> "}"
+  | Comma -> ","
+  | Dot -> "."
+  | Minus -> "-"
+  | Plus -> "+"
+  | Semicolon -> ";"
+  | Slash -> "/"
+  | Star -> "*"
   (* One or two character tokens. *)
-  | BANG -> "!"
-  | BANG_EQUAL -> "!="
-  | EQUAL -> "="
-  | EQUAL_EQUAL -> "=="
-  | GREATER -> ">"
-  | GREATER_EQUAL -> ">="
-  | LESS -> "<"
-  | LESS_EQUAL -> "<="
+  | Bang -> "!"
+  | Bang_equal -> "!="
+  | Equal -> "="
+  | Equal_equal -> "=="
+  | Greater -> ">"
+  | Greater_equal -> ">="
+  | Less -> "<"
+  | Less_equal -> "<="
   (* Literals. *)
-  | IDENTIFIER -> "identifier"
-  | STRING s -> "string " ^ s
-  | NUMBER f -> "number " ^ Float.to_string f
+  | Identifier -> "identifier"
+  | String s -> "string " ^ s
+  | Number f -> "number " ^ Float.to_string f
   (* Keywords. *)
-  | AND -> "and"
-  | CLASS -> "class"
-  | ELSE -> "else"
-  | FALSE -> "false"
-  | FUN -> "fun"
-  | FOR -> "for"
-  | IF -> "if"
-  | NIL -> "nil"
-  | OR -> "or"
-  | PRINT -> "print"
-  | RETURN -> "return"
-  | SUPER -> "super"
-  | THIS -> "this"
-  | TRUE -> "true"
-  | VAR -> "var"
-  | WHILE -> "while"
-  | EOF -> "eof"
+  | And -> "and"
+  | Class -> "class"
+  | Else -> "else"
+  | False -> "false"
+  | Fun -> "fun"
+  | For -> "for"
+  | If -> "if"
+  | Nil -> "nil"
+  | Or -> "or"
+  | Print -> "print"
+  | Return -> "return"
+  | Super -> "super"
+  | This -> "this"
+  | True -> "true"
+  | Var -> "var"
+  | While -> "while"
+  | Eof -> "eof"

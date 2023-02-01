@@ -15,6 +15,9 @@ Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
     *   This also means that the code is easily to understand and avoids
         duplication, which I feel it does. The lexer is roughly 150 lines of
         code, and the parser and interpreter are roughly the same.
+*   Figure out a way to return lexing errors and exiting before running the
+    parser.
+*   Profile the code
 
 ## Lessons Learned
 
@@ -23,9 +26,9 @@ Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
     reallocated when full a la Rust's `Vec<T>`. I presume this is due to the
     garbage collector, where it is easier to allocate a smaller object in the
     nursery and point the tail node to that rather than allocating the same
-    list again.
+    list again. *Is this slow?*
 *   Jane Street's replacement standard libraries (Base, Core) avoid raising
-    exceptions.
+    exceptions unless they're postfixed with `_exn`.
 *   OCaml will automatically run any expression of type `unit`, so functions
     called for the purpose of expressing side effects should be of prototype
     `unit -> unit`.
@@ -33,4 +36,14 @@ Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
     described in
     [Language extensions](https://v2.ocaml.org/manual/bindingops.html) isn't
     actually defined either?
+    *   Ah, it's just saying that forms of `let*` bindings were allowed, not
+        that they're defined.
+
+## Links
+
+*   https://craftinginterpreters.com/scanning.html
+*   https://keleshev.com/composable-error-handling-in-ocaml
+*   https://cs.brown.edu/courses/cs017/content/docs/ocaml-style.pdf
+*   https://github.com/graydon/rust-prehistory/blob/08ba0a74a7dd74b42c967b9c0263eb63627e9bb9/src/boot/fe/lexer.mll
+*   https://www.cs.princeton.edu/courses/archive/fall13/cos326/lec/16b-laziness.pdf
 

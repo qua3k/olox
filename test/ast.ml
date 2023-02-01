@@ -5,20 +5,11 @@ open Olox.Print.Ast
 open Olox.Token
 
 let example =
-  BINARY
+  Binary
     {
-      left = UNARY { operator = MINUS; expr = LITERAL (NUMBER 123.) };
-      operator = STAR;
-      right =
-        GROUPING
-          {
-            left = LEFT_PAREN;
-            expr = LITERAL (NUMBER 45.67);
-            right = RIGHT_PAREN;
-          };
+      left = Unary { operator = Minus; expr = Literal (Number 123.) };
+      operator = Star;
+      right = Grouping (Literal (Number 45.67));
     }
 
-let () =
-  match print example with
-  | "(* (- 123.) (group 45.67))" -> exit 0
-  | _ -> exit ~-1
+let () = assert (expression example = "(* (- 123.) (group 45.67))")

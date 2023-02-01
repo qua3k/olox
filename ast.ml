@@ -1,8 +1,10 @@
-type literal = NIL | BOOL of bool | NUMBER of float | STRING of string
+type literal = Nil | Bool of bool | Number of float | String of string
 
 type expression =
-  | ASSIGNMENT of { ident : literal; equal : Token.t; expr : expression }
-  | BINARY of { left : expression; operator : Token.t; right : expression }
-  | GROUPING of { left : Token.t; expr : expression; right : Token.t }
-  | LITERAL of literal
-  | UNARY of { operator : Token.t; expr : expression }
+  | Assignment of { ident : literal; equal : Token.t; expr : expression }
+  | Binary of { left : expression; operator : Token.t; right : expression }
+  | Grouping of expression
+  | Literal of literal
+  | Unary of { operator : Token.t; expr : expression }
+
+type statement = Expression of expression | Print of expression
