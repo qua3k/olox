@@ -98,8 +98,6 @@ module Eval = struct
 
   let is_equal (a : literal) (b : literal) =
     match (a, b) with
-    (* Deviate slightly to avoid converting "three" into 3. *)
-    | String s, Number n | Number n, String s -> Float.to_string n = s
     | String a, String b -> a = b
     | Number a, Number b -> a = b (* Comparing floats??? *)
     | Nil, Nil -> true
@@ -132,7 +130,7 @@ module Eval = struct
     | Less, Number l, Number r -> Bool (l < r)
     | Less_equal, Number l, Number r -> Bool (l <= r)
     | Bang_equal, _, _ -> Bool (is_equal a b |> not)
-    | Equal, _, _ -> Bool (is_equal a b)
+    | Equal_equal, _, _ -> Bool (is_equal a b)
     | _ -> Invalid_argument "Arguments must be of the same type." |> raise
 
   and print e = evaluate e |> Print.Ast.literal |> print_endline
