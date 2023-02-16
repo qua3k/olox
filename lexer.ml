@@ -68,7 +68,7 @@ let handle_string next =
   | true -> (Error (error next.line "Unterminated string."), next)
   | false -> (
       let after = advance state in
-      ( Ok,
+      ( Ok (),
         match substring after with
         | Some s ->
             add_token after (String s) (* advances past last quote *)
@@ -115,26 +115,26 @@ let handle_identifier state =
 let scan_token state =
   let next = advance state in
   match get_current_char state with
-  | '(' -> (Ok, add_token next Left_paren)
-  | ')' -> (Ok, add_token next Right_paren)
-  | '{' -> (Ok, add_token next Left_brace)
-  | '}' -> (Ok, add_token next Right_paren)
-  | ',' -> (Ok, add_token next Comma)
-  | '.' -> (Ok, add_token next Dot)
-  | '-' -> (Ok, add_token next Minus)
-  | '+' -> (Ok, add_token next Plus)
-  | ';' -> (Ok, add_token next Semicolon)
-  | '*' -> (Ok, add_token next Star)
-  | '!' -> (Ok, add_two_char_token next Bang_equal Bang)
-  | '=' -> (Ok, add_two_char_token next Equal_equal Equal)
-  | '<' -> (Ok, add_two_char_token next Less_equal Less)
-  | '>' -> (Ok, add_two_char_token next Greater_equal Greater)
-  | '/' -> (Ok, add_slash next)
-  | ' ' | '\r' | '\t' -> (Ok, next)
-  | '\n' -> (Ok, { next with line = next.line + 1 })
+  | '(' -> (Ok (), add_token next Left_paren)
+  | ')' -> (Ok (), add_token next Right_paren)
+  | '{' -> (Ok (), add_token next Left_brace)
+  | '}' -> (Ok (), add_token next Right_paren)
+  | ',' -> (Ok (), add_token next Comma)
+  | '.' -> (Ok (), add_token next Dot)
+  | '-' -> (Ok (), add_token next Minus)
+  | '+' -> (Ok (), add_token next Plus)
+  | ';' -> (Ok (), add_token next Semicolon)
+  | '*' -> (Ok (), add_token next Star)
+  | '!' -> (Ok (), add_two_char_token next Bang_equal Bang)
+  | '=' -> (Ok (), add_two_char_token next Equal_equal Equal)
+  | '<' -> (Ok (), add_two_char_token next Less_equal Less)
+  | '>' -> (Ok (), add_two_char_token next Greater_equal Greater)
+  | '/' -> (Ok (), add_slash next)
+  | ' ' | '\r' | '\t' -> (Ok (), next)
+  | '\n' -> (Ok (), { next with line = next.line + 1 })
   | '"' -> handle_string next
-  | '0' .. '9' -> (Ok, handle_digit next)
-  | alpha when is_alpha alpha -> (Ok, handle_identifier next)
+  | '0' .. '9' -> (Ok (), handle_digit next)
+  | alpha when is_alpha alpha -> (Ok (), handle_identifier next)
   | _ -> (Error (error state.line "Unexpected character."), next)
 
 let empty = function [] -> true | _ -> false
@@ -144,11 +144,11 @@ let empty = function [] -> true | _ -> false
     mutable state. *)
 let scan_tokens source =
   let rec scan (r, s) errors =
-    let es = match r with Ok -> errors | Error e -> e :: errors in
+    let es = match r with Ok () -> errors | Error e -> e :: errors in
     match (is_at_end s, empty es) with
     | false, _ -> scan ({ s with start = s.current } |> scan_token) es
     | true, true -> Result.Ok (add_token s Eof)
     | true, false -> Error (List.rev es)
   in
-  let* r = scan (Ok, default source) [] in
+  let* r = scan (Ok (), default source) [] in
   Ok (List.rev r.tokens)

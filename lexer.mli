@@ -16,5 +16,5 @@ val add_two_char_token : state -> Token.t -> Token.t -> state
 val advance_past : state -> (char -> bool) -> state
 val substring : state -> string option
 val float_substring : state -> state
-val scan_token : state -> string Error.result * state
+val scan_token : state -> (unit, string) result * state
 val scan_tokens : string -> (token list, string list) result
