@@ -4,7 +4,7 @@ module Ast = struct
 
   let rec expression = function
     | Binary b ->
-        let left, right = (expression b.left, expression b.right) in
+        let left = expression b.left and right = expression b.right in
         Printf.sprintf "(%s %s %s)" (to_string b.operator) left right
     | Grouping g ->
         let expr = expression g in
@@ -14,18 +14,19 @@ module Ast = struct
     | Literal (Number f) -> Float.to_string f
     | Literal (String s) -> s
     | Unary u ->
-        let expr = expression u.expr in
-        Printf.sprintf "(%s %s)" (to_string u.operator) expr
+        let expr = expression u.expr and str = to_string u.operator in
+        Printf.sprintf "(%s %s)" str expr
     | _ -> failwith "not implemented"
 
   let literal = function
     | Bool b -> Bool.to_string b
-    | Number f -> (
+    | Number f -> begin
         let s = Float.to_string f in
         let l = String.length s in
         match s.[l - 1] = '.' with
         | true -> String.sub s 0 (l - 1)
-        | false -> s)
+        | false -> s
+      end
     | String a -> a
     | Nil -> "nil"
 end
