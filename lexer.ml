@@ -102,8 +102,8 @@ let emit_token state =
   let rec emit s =
     let open Token in
     let s' = { s with start = s.current } in
-    let s'' = advance s' in
     let is_end = is_at_end s' in
+    let s'' = advance s' in
     match is_end with
     | true -> (Ok Eof, s'')
     | false -> begin
@@ -118,10 +118,10 @@ let emit_token state =
         | '+' -> (Ok Plus, s'')
         | ';' -> (Ok Semicolon, s'')
         | '*' -> (Ok Star, s'')
-        | '!' -> (Ok (emit_two_char_token state Bang_equal Bang), s'')
-        | '=' -> (Ok (emit_two_char_token state Equal_equal Equal), s'')
-        | '<' -> (Ok (emit_two_char_token state Less_equal Less), s'')
-        | '>' -> (Ok (emit_two_char_token state Greater_equal Greater), s'')
+        | '!' -> (Ok (emit_two_char_token s' Bang_equal Bang), s'')
+        | '=' -> (Ok (emit_two_char_token s' Equal_equal Equal), s'')
+        | '<' -> (Ok (emit_two_char_token s' Less_equal Less), s'')
+        | '>' -> (Ok (emit_two_char_token s' Greater_equal Greater), s'')
         | '/' -> begin
             match emit_slash s'' with
             | Left s -> emit s
@@ -140,7 +140,7 @@ let emit_token state =
             | Some (t, s''') -> (Ok t, s''')
             | None -> emit s''
           end
-        | _ -> (Error (error state.line "Unexpected character."), s'')
+        | _ -> (Error (error s'.line "Unexpected character."), s'')
       end
   in
   emit state
