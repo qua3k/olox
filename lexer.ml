@@ -98,52 +98,49 @@ let emit_ident state =
   Option.bind (substring state') (fun s -> Some (t_of_string s, state'))
 
 (* Only emit tokens or errors, otherwise we recurse *)
-let emit_token state =
-  let rec emit s =
-    let open Token in
-    let s' = { s with start = s.current } in
-    let is_end = is_at_end s' in
-    let s'' = advance s' in
-    match is_end with
-    | true -> (Ok Eof, s'')
-    | false -> begin
-        match get_current_char s' with
-        | '(' -> (Ok Left_paren, s'')
-        | ')' -> (Ok Right_paren, s'')
-        | '{' -> (Ok Left_brace, s'')
-        | '}' -> (Ok Right_brace, s'')
-        | ',' -> (Ok Comma, s'')
-        | '.' -> (Ok Dot, s'')
-        | '-' -> (Ok Minus, s'')
-        | '+' -> (Ok Plus, s'')
-        | ';' -> (Ok Semicolon, s'')
-        | '*' -> (Ok Star, s'')
-        | '!' -> (Ok (emit_two_char_token s' Bang_equal Bang), s'')
-        | '=' -> (Ok (emit_two_char_token s' Equal_equal Equal), s'')
-        | '<' -> (Ok (emit_two_char_token s' Less_equal Less), s'')
-        | '>' -> (Ok (emit_two_char_token s' Greater_equal Greater), s'')
-        | '/' -> begin
-            match emit_slash s'' with
-            | Left s -> emit s
-            | Right t -> (Ok t, s'')
-          end
-        | ' ' | '\r' | '\t' -> emit s''
-        | '\n' -> emit { s'' with line = s''.line + 1 }
-        | '"' -> emit_str s''
-        | '0' .. '9' -> begin
-            match add_digit s'' with
-            | Some f -> (Ok (Number f), s'')
-            | None -> emit s''
-          end
-        | alpha when is_alpha alpha -> begin
-            match emit_ident s'' with
-            | Some (t, s''') -> (Ok t, s''')
-            | None -> emit s''
-          end
-        | _ -> (Error (error s'.line "Unexpected character."), s'')
-      end
-  in
-  emit state
+let rec emit_token state =
+  let state' = { state with start = state.current } in
+  let state'' = advance state' in
+  let open Token in
+  match is_at_end state' with
+  | true -> (Ok Eof, state'')
+  | false -> begin
+      match get_current_char state' with
+      | '(' -> (Ok Left_paren, state'')
+      | ')' -> (Ok Right_paren, state'')
+      | '{' -> (Ok Left_brace, state'')
+      | '}' -> (Ok Right_brace, state'')
+      | ',' -> (Ok Comma, state'')
+      | '.' -> (Ok Dot, state'')
+      | '-' -> (Ok Minus, state'')
+      | '+' -> (Ok Plus, state'')
+      | ';' -> (Ok Semicolon, state'')
+      | '*' -> (Ok Star, state'')
+      | '!' -> (Ok (emit_two_char_token state' Bang_equal Bang), state'')
+      | '=' -> (Ok (emit_two_char_token state' Equal_equal Equal), state'')
+      | '<' -> (Ok (emit_two_char_token state' Less_equal Less), state'')
+      | '>' ->
+          (Ok (emit_two_char_token state' Greater_equal Greater), state'')
+      | '/' -> begin
+          match emit_slash state'' with
+          | Left s -> emit_token s
+          | Right t -> (Ok t, state'')
+        end
+      | ' ' | '\r' | '\t' -> emit_token state''
+      | '\n' -> emit_token { state'' with line = state''.line + 1 }
+      | '"' -> emit_str state''
+      | '0' .. '9' -> begin
+          match add_digit state'' with
+          | Some f -> (Ok (Number f), state'')
+          | None -> emit_token state''
+        end
+      | alpha when is_alpha alpha -> begin
+          match emit_ident state'' with
+          | Some (t, s''') -> (Ok t, s''')
+          | None -> emit_token state''
+        end
+      | _ -> (Error (error state'.line "Unexpected character."), state'')
+    end
 
 (** Scan tokens. We reverse the list at the end; we are prepending because
     it's more efficient. This should aim to be purely functional, so no
