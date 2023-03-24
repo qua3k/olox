@@ -38,6 +38,12 @@ Use Jane Street's [style guide](https://opensource.janestreet.com/standards/).
     actually defined either?
     *   Ah, it's just saying that forms of `let*` bindings were allowed, not
         that they're defined.
+*   I have spent way too much time refactoring code that I didn't like, instead
+    of actually writing more code.
+
+## Interpreter Things
+
+*   When synchronizing we want to parse the whole thing, but not interpret it
 
 ## Links
 

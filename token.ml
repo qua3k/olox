@@ -21,7 +21,7 @@ type t =
   | Less
   | Less_equal
   (* Literals. *)
-  | Identifier
+  | Identifier of string
   | String of string
   | Number of float
   (* Keywords. *)
@@ -67,7 +67,7 @@ let to_string = function
   | Less -> "<"
   | Less_equal -> "<="
   (* Literals. *)
-  | Identifier -> "identifier"
+  | Identifier i -> "identifier " ^ i
   | String s -> "string " ^ s
   | Number f -> "number " ^ Float.to_string f
   (* Keywords. *)

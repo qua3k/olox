@@ -14,8 +14,8 @@ module Ast = struct
     | Literal (Number f) -> Float.to_string f
     | Literal (String s) -> s
     | Unary u ->
-        let expr = expression u.expr and str = to_string u.operator in
-        Printf.sprintf "(%s %s)" str expr
+        let str = to_string u.operator in
+        Printf.sprintf "(%s %s)" str @@ expression u.expr
     | _ -> failwith "not implemented"
 
   let literal = function

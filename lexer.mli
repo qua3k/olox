@@ -1,4 +1,6 @@
 type token = { t : Token.t; line : int }
+
+(** The record for the lexer state. *)
 type state
 
 (** [default s] returns a default [state] from a string. *)
@@ -11,10 +13,12 @@ val advance : state -> state
 val is_at_end : state -> bool
 
 val get_current_char : state -> char
-val add_token : state -> Token.t -> state
-val add_two_char_token : state -> Token.t -> Token.t -> state
-val advance_past : state -> (char -> bool) -> state
+val emit_two_char_token : state -> 'a -> 'a -> 'a
+val advance_past : (char -> bool) -> state -> state
 val substring : state -> string option
-val float_substring : state -> state
-val scan_token : state -> (unit, string) result * state
+
+(** Get a token or an error from one state. *)
+val emit_token : state -> (Token.t, string) result * state
+
+(** Lex a Lox program into tokens and errors. *)
 val scan_tokens : string -> (token list, string list) result

@@ -1,47 +1,38 @@
 open Error
 
 type token = { t : Token.t; line : int }
+type state = { source : string; start : int; current : int; line : int }
 
-type state = {
-  source : string;
-  tokens : token list;
-  start : int;
-  current : int;
-  line : int;
-}
-
-let default source =
-  { source; tokens = []; start = 0; current = 0; line = 1 }
-
+let default source = { source; start = 0; current = 0; line = 1 }
 let advance state = { state with current = state.current + 1 }
 let is_at_end state = state.current >= String.length state.source
 
 let get_current_char state =
   try state.source.[state.current] with _ -> '\x00'
 
-let add_token state t =
-  { state with tokens = { t; line = state.line } :: state.tokens }
-
-let add_two_char_token next a b =
-  let token =
-    match get_current_char next = '=' with true -> a | false -> b
-  in
-  add_token (advance next) token
+let emit_two_char_token next a b =
+  match get_current_char next with '=' -> a | _ -> b
 
 (** [advance_past state f] Advance state to end as long as the predicate
     is true, setting current to the first char that doesn't meet the
     predicate. *)
-let rec advance_past state f =
-  match get_current_char state |> f with
-  | true -> advance_past (advance state) f
-  | false -> state
+let rec advance_past f state =
+  let ch = get_current_char state in
+  match ch with
+  | '\x00' -> state
+  | _ -> begin
+      match f ch with
+      | true -> advance_past f (advance state)
+      | false -> state
+    end
 
-let add_slash next =
+let emit_slash next =
+  let open Either in
   match get_current_char next with
-  | '/' -> advance_past next (fun c -> c <> '\n')
+  | '/' -> Left (advance_past (fun c -> c <> '\n') next)
   (* | '*' -> If we allow nested comments we need to keep count of how deep
      we're nesting. *)
-  | _ -> add_token next Slash
+  | _ -> Right Token.Slash
 
 let is_digit = function '0' .. '9' -> true | _ -> false
 
@@ -57,98 +48,120 @@ let substring state =
     Some (String.sub state.source start (state.current - start))
   with _ -> None
 
-let float_substring state =
-  match Option.bind (substring state) Float.of_string_opt with
-  | Some f -> add_token state (Number f)
-  | None -> state
+(* should be infalliable *)
+let emit_str state =
+  let state' = advance_past (fun c -> c <> '"') state in
+  match is_at_end state' with
+  | true -> (Error (error state'.line "Unterminated string."), state')
+  | false ->
+      let state'' = advance state' in
+      let str = substring state'' in
+      (Ok (Token.String (Option.get str)), state'')
 
-let handle_string next =
-  let state = advance_past next (fun c -> c <> '"') in
-  match is_at_end state with
-  | true -> (Error (error next.line "Unterminated string."), next)
-  | false -> (
-      let after = advance state in
-      ( Ok (),
-        match substring after with
-        | Some s ->
-            add_token after (String s) (* advances past last quote *)
-        | None -> next ))
+let bind_float s = Option.bind (substring s) Float.of_string_opt
 
-let handle_digit state =
-  let next = advance_past state is_digit in
-  match get_current_char next with
-  | '.' -> (
-      let after = advance next in
-      match after |> get_current_char |> is_digit with
-      | true -> advance_past after is_digit |> float_substring
-      | false -> float_substring next)
-  | _ -> float_substring next
-
-let handle_identifier state =
-  let next = advance_past state is_alpha_numeric in
-  match substring next with
-  | Some s ->
-      let open Token in
-      let token_type =
-        match s with
-        | "and" -> And
-        | "class" -> Class
-        | "else" -> Else
-        | "false" -> False
-        | "fun" -> Fun
-        | "for" -> For
-        | "if" -> If
-        | "nil" -> Nil
-        | "or" -> Or
-        | "print" -> Print
-        | "return" -> Return
-        | "super" -> Super
-        | "this" -> This
-        | "true" -> True
-        | "var" -> Var
-        | "while" -> While
-        | _ -> Identifier
+let add_digit state =
+  let advance_digit = advance_past is_digit in
+  let state' = advance_digit state in
+  match get_current_char state' with
+  | '.' ->
+      let state'' = advance state' in
+      let s =
+        match get_current_char state'' |> is_digit with
+        | true -> advance_digit state''
+        | false -> state'
       in
-      add_token next token_type
-  | None -> next
+      bind_float s
+  | _ -> bind_float state'
 
-let scan_token state =
-  let next = advance state in
-  match get_current_char state with
-  | '(' -> (Ok (), add_token next Left_paren)
-  | ')' -> (Ok (), add_token next Right_paren)
-  | '{' -> (Ok (), add_token next Left_brace)
-  | '}' -> (Ok (), add_token next Right_paren)
-  | ',' -> (Ok (), add_token next Comma)
-  | '.' -> (Ok (), add_token next Dot)
-  | '-' -> (Ok (), add_token next Minus)
-  | '+' -> (Ok (), add_token next Plus)
-  | ';' -> (Ok (), add_token next Semicolon)
-  | '*' -> (Ok (), add_token next Star)
-  | '!' -> (Ok (), add_two_char_token next Bang_equal Bang)
-  | '=' -> (Ok (), add_two_char_token next Equal_equal Equal)
-  | '<' -> (Ok (), add_two_char_token next Less_equal Less)
-  | '>' -> (Ok (), add_two_char_token next Greater_equal Greater)
-  | '/' -> (Ok (), add_slash next)
-  | ' ' | '\r' | '\t' -> (Ok (), next)
-  | '\n' -> (Ok (), { next with line = next.line + 1 })
-  | '"' -> handle_string next
-  | '0' .. '9' -> (Ok (), handle_digit next)
-  | alpha when is_alpha alpha -> (Ok (), handle_identifier next)
-  | _ -> (Error (error state.line "Unexpected character."), next)
+let t_of_string = function
+  | "and" -> Token.And
+  | "class" -> Class
+  | "else" -> Else
+  | "false" -> False
+  | "fun" -> Fun
+  | "for" -> For
+  | "if" -> If
+  | "nil" -> Nil
+  | "or" -> Or
+  | "print" -> Print
+  | "return" -> Return
+  | "super" -> Super
+  | "this" -> This
+  | "true" -> True
+  | "var" -> Var
+  | "while" -> While
+  | _ as i -> Identifier i
 
-let empty = function [] -> true | _ -> false
+let emit_ident state =
+  let state' = advance_past is_alpha_numeric state in
+  Option.bind (substring state') (fun s -> Some (t_of_string s, state'))
+
+(* Only emit tokens or errors, otherwise we recurse *)
+let emit_token state =
+  let rec emit s =
+    let open Token in
+    let s' = { s with start = s.current } in
+    let s'' = advance s' in
+    let is_end = is_at_end s' in
+    match is_end with
+    | true -> (Ok Eof, s'')
+    | false -> begin
+        match get_current_char s' with
+        | '(' -> (Ok Left_paren, s'')
+        | ')' -> (Ok Right_paren, s'')
+        | '{' -> (Ok Left_brace, s'')
+        | '}' -> (Ok Right_brace, s'')
+        | ',' -> (Ok Comma, s'')
+        | '.' -> (Ok Dot, s'')
+        | '-' -> (Ok Minus, s'')
+        | '+' -> (Ok Plus, s'')
+        | ';' -> (Ok Semicolon, s'')
+        | '*' -> (Ok Star, s'')
+        | '!' -> (Ok (emit_two_char_token state Bang_equal Bang), s'')
+        | '=' -> (Ok (emit_two_char_token state Equal_equal Equal), s'')
+        | '<' -> (Ok (emit_two_char_token state Less_equal Less), s'')
+        | '>' -> (Ok (emit_two_char_token state Greater_equal Greater), s'')
+        | '/' -> begin
+            match emit_slash s'' with
+            | Left s -> emit s
+            | Right t -> (Ok t, s'')
+          end
+        | ' ' | '\r' | '\t' -> emit s''
+        | '\n' -> emit { s'' with line = s''.line + 1 }
+        | '"' -> emit_str s''
+        | '0' .. '9' -> begin
+            match add_digit s'' with
+            | Some f -> (Ok (Number f), s'')
+            | None -> emit s''
+          end
+        | alpha when is_alpha alpha -> begin
+            match emit_ident s'' with
+            | Some (t, s''') -> (Ok t, s''')
+            | None -> emit s''
+          end
+        | _ -> (Error (error state.line "Unexpected character."), s'')
+      end
+  in
+  emit state
 
 (** Scan tokens. We reverse the list at the end; we are prepending because
     it's more efficient. This should aim to be purely functional, so no
-    mutable state. *)
+    mutable state. Return both errors and tokens and let the caller handle the
+    output. *)
 let scan_tokens source =
-  let rec scan (r, s) errors =
-    let es = match r with Ok () -> errors | Error e -> e :: errors in
-    match (is_at_end s, empty es) with
-    | false, _ -> scan ({ s with start = s.current } |> scan_token) es
-    | true, true -> Result.Ok (add_token s Eof)
-    | true, false -> Error (List.rev es)
+  let s = default source in
+  let rec scan state ts es =
+    match is_at_end state with
+    | true -> begin
+        match es with [] -> Ok (List.rev ts) | _ -> Error (List.rev es)
+      end
+    | false -> begin
+        let result, state' = emit_token state in
+        let scan' = scan state' in
+        match result with
+        | Ok t -> scan' ({ t; line = state'.line } :: ts) es
+        | Error e -> scan' ts (e :: es)
+      end
   in
-  let* r = scan (Ok (), default source) [] in
-  Ok (List.rev r.tokens)
+  scan s [] []

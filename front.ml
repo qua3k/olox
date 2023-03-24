@@ -1,27 +1,19 @@
 open Lexer
 
-let rec perrors = function
-  | hd :: tl ->
-      prerr_endline hd;
-      perrors tl
-  | [] -> ()
+let perrors = List.iter prerr_endline
 
+(* Returns true if an errors occured *)
 let run source =
-  match scan_tokens source with
-  | Ok ts -> (
-      match Parser.interpret ts with
-      | Ok _ -> false
-      | Error e ->
-          prerr_endline e;
-          true)
+  let rs = scan_tokens source in
+  match Result.bind rs Parser.interpret with
+  | Ok _ -> false
   | Error es ->
       perrors es;
-      false
+      true
 
 let run_prompt () =
   while true do
     print_string "> ";
-    flush stdout;
     run (read_line ()) |> ignore
   done
 
@@ -31,7 +23,6 @@ let run_file path =
   if really_input_string ic len |> run = true then exit 65
 
 (* this should return a result *)
-
 let main (args : string array) =
   match Array.length args with
   | 1 -> run_prompt ()
