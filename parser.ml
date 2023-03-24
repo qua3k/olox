@@ -112,8 +112,8 @@ end
 (** This module will be exception hell, because there is no way I'm
     writing pattern matches on Result. *)
 module Eval = struct
-  open Ast
   open Token
+  open Ast
 
   let is_true = function Bool false | Nil -> false | _ -> true
 
