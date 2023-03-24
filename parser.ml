@@ -117,7 +117,7 @@ module Eval = struct
 
   let is_true = function Bool false | Nil -> false | _ -> true
 
-  let is_equal (a : literal) (b : literal) =
+  let is_equal a b =
     match (a, b) with
     | String a, String b -> a = b
     | Number a, Number b -> a = b (* Comparing floats??? *)

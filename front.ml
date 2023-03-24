@@ -23,7 +23,7 @@ let run_file path =
   if really_input_string ic len |> run = true then exit 65
 
 (* this should return a result *)
-let main (args : string array) =
+let main args =
   match Array.length args with
   | 1 -> run_prompt ()
   | 2 -> run_file args.(1)
