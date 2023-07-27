@@ -17,14 +17,12 @@ let emit_two_char_token next a b =
     is true, setting current to the first char that doesn't meet the
     predicate. *)
 let rec advance_past f state =
-  let ch = get_current_char state in
-  match ch with
+  match get_current_char state with
   | '\x00' -> state
-  | _ -> begin
+  | ch -> (
       match f ch with
-      | true -> advance_past f (advance state)
-      | false -> state
-    end
+      | true -> advance_past f @@ advance state
+      | false -> state)
 
 let emit_slash next =
   let open Either in
